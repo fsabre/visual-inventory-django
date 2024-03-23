@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Location viewer</title>
+</head>
+<body>
+<h1>Location n°{{ location.pk }} ({{ location.name }})</h1>
+<ul>
+    {% for sub in sub_locations %}
+        <li><a href="{% url "viewer" location_id=sub.pk %}">{{ sub.name }}</a></li>
+    {% endfor %}
+</ul>
+</body>
+</html>
