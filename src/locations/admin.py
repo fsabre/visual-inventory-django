@@ -9,6 +9,7 @@ class LocationAdmin(admin.ModelAdmin):
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ["name"]
+    filter_horizontal = ["locations"]
 
 
 admin.site.register(Location, LocationAdmin)
