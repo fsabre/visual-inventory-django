@@ -14,7 +14,7 @@ class Location(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"Location ({self.name})"
+        return self.name
 
     def fill_with_category_names(self, s: Set[str]) -> None:
         """Fill a set with all category names in this location and its sub-locations."""
@@ -28,4 +28,4 @@ class Category(models.Model):
     locations = models.ManyToManyField(Location, related_name="stored_categories")
 
     def __str__(self) -> str:
-        return f"Category ({self.name})"
+        return self.name
