@@ -6,9 +6,16 @@
 </head>
 <body>
 <h1>Location n°{{ location.pk }} ({{ location.name }})</h1>
+<p>Sub-locations :</p>
 <ul>
     {% for sub in sub_locations %}
         <li><a href="{% url "viewer" location_id=sub.pk %}">{{ sub.name }}</a></li>
+    {% endfor %}
+</ul>
+<p>Contains :</p>
+<ul>
+    {% for cat_name in category_names %}
+        <li>{{ cat_name }}</li>
     {% endfor %}
 </ul>
 </body>
