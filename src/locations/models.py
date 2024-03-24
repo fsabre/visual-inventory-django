@@ -25,13 +25,6 @@ class Location(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    parent = models.ForeignKey(
-        to="self",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="children",
-    )
     locations = models.ManyToManyField(Location, related_name="stored_categories")
 
     def __str__(self) -> str:

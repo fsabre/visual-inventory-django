@@ -2,5 +2,5 @@
 
 ## TODO
 
-- The parent of Location and Category can't be self.
+- The parent of a Location can't be self or children.
 - Optimize queries
