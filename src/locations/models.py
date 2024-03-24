@@ -27,5 +27,8 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     locations = models.ManyToManyField(Location, related_name="stored_categories")
 
+    class Meta:
+        verbose_name_plural = "Categories"
+
     def __str__(self) -> str:
         return self.name
