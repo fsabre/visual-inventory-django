@@ -21,6 +21,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("location/", include("locations.urls")),
+    path("api/", include("locations.urls")),
     path("", lambda req: redirect("/location/1")),
 ]
