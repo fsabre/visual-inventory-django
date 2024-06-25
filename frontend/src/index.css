@@ -1,0 +1,9 @@
+.tile-container {
+    display: flex;
+    gap: 10px;
+}
+
+.tile {
+    padding: 10px;
+    border: solid grey 1px;
+}

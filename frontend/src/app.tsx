@@ -19,14 +19,25 @@ export function App() {
     return (
         <div>
             <h1>Location n°{location.id} ({location.name})</h1>
-            <p><a onClick={() => setLocationId(location.parent ?? 1)}>Go to parent</a></p>
-            <p>Sub-locations :</p>
-            <ul>
+            <div
+                onClick={() => setLocationId(location.parent ?? 1)}
+                className={"tile"}
+            >
+                Parent
+            </div>
+            <h2>Sub-locations :</h2>
+            <div className={"tile-container"}>
                 {location.subLocations.map((sub, idx) => (
-                    <li key={idx}><a onClick={() => setLocationId(sub.id)}>{sub.name}</a></li>
+                    <div
+                        key={idx}
+                        onClick={() => setLocationId(sub.id)}
+                        className={"tile"}
+                    >
+                        {sub.name}
+                    </div>
                 ))}
-            </ul>
-            <p>Contains :</p>
+            </div>
+            <h2>Contains :</h2>
             <ul>
                 {location.categoryNames.map((catName, idx) => (
                     <li key={idx}>{catName}</li>
