@@ -23,25 +23,10 @@ def viewer(request: HttpRequest, location_id: int) -> HttpResponse:
 
 def get_location(request: HttpRequest, location_id: int) -> HttpResponse:
     depth: int = int(request.GET.get("depth", default="0"))
-    if not (0 <= depth <= 1):
-        return HttpResponse(status=400, content="depth must be between 0 and 1")
+    if not (0 <= depth):
+        return JsonResponse({"error": "depth must be positive"}, status=400)
     location: Location = get_object_or_404(Location, pk=location_id)
-    content = {
-        "id": location.id,
-        "name": location.name,
-        "parent": location.parent.id if location.parent else None,
-        "subLocations": [],
-    }
-    if depth == 1:
-        content["subLocations"] = [
-            {
-                "id": sub.id,
-                "name": sub.name,
-                "parent": sub.parent.id if sub.parent else None,
-                "subLocations": [],
-            }
-            for sub in location.children.all()
-        ]
+    content = location.to_json(depth=depth)
     category_names = set()
     location.fill_with_category_names(category_names)
     content["categoryNames"] = list(category_names)

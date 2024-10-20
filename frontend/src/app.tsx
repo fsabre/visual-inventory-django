@@ -3,7 +3,7 @@ import {useEffect, useState} from "preact/hooks";
 import {Location} from "./models.ts";
 import {getLocation} from "./api.ts";
 
-const BLANK_LOCATION: Location = {id: 0, name: "", parent: null, subLocations: [], categoryNames: []};
+const BLANK_LOCATION: Location = {id: 0, name: "", parent: null, children: [], categoryNames: []};
 
 export function App() {
     const [locationId, setLocationId] = useState(1);
@@ -27,13 +27,13 @@ export function App() {
             </div>
             <h2>Sub-locations :</h2>
             <div className={"tile-container"}>
-                {location.subLocations.map((sub, idx) => (
+                {location.children.map((child, idx) => (
                     <div
                         key={idx}
-                        onClick={() => setLocationId(sub.id)}
+                        onClick={() => setLocationId(child.id)}
                         className={"tile"}
                     >
-                        {sub.name}
+                        {child.name}
                     </div>
                 ))}
             </div>

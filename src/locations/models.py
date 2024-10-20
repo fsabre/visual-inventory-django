@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, Dict
 
 from django.db import models
 
@@ -15,6 +15,18 @@ class Location(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def to_json(self, depth: int = 0) -> Dict:
+        content = {
+            "id": self.id,
+            "name": self.name,
+            "parent": self.parent.id if self.parent else None,
+            "children": [],
+        }
+        if depth > 0:
+            for child in self.children.all():
+                content["children"].append(child.to_json(depth=depth - 1))
+        return content
 
     def fill_with_category_names(self, s: Set[str]) -> None:
         """Fill a set with all category names in this location and its sub-locations."""
