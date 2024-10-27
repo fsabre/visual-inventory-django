@@ -48,8 +48,7 @@ npm run dev
 
 ### Features
 
-- Make a search mode that highlights the locations that contain a category
-- Add a editable state for locations (to tidy, to label, done)
+- Add an editable state for locations (to tidy, to label, done)
 
 ### Fix
 

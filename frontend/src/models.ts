@@ -3,5 +3,10 @@ export interface Location {
     name: string;
     parent: number | null;
     children: Location[];
-    categoryNames: string[];
+    categories: Category[];
+}
+
+export interface Category {
+    id: number;
+    name: string;
 }

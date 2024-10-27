@@ -7,3 +7,7 @@
     padding: 10px;
     border: solid grey 1px;
 }
+
+.tile.highlighted {
+    background-color: peachpuff;
+}

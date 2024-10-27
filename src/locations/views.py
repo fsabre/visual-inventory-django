@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
 
-from .models import Location
+from .models import Location, Category
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -22,12 +22,15 @@ def viewer(request: HttpRequest, location_id: int) -> HttpResponse:
 
 
 def get_location(request: HttpRequest, location_id: int) -> HttpResponse:
-    depth: int = int(request.GET.get("depth", default="0"))
+    depth: int = int(request.GET.get(key="depth", default="0"))
+    include_categories: bool = int(request.GET.get(key="categories", default="0")) > 0
     if not (0 <= depth):
         return JsonResponse({"error": "depth must be positive"}, status=400)
     location: Location = get_object_or_404(Location, pk=location_id)
-    content = location.to_json(depth=depth)
-    category_names = set()
-    location.fill_with_category_names(category_names)
-    content["categoryNames"] = list(category_names)
+    content = location.to_json(depth=depth, include_categories=include_categories)
     return JsonResponse(content, headers={"Access-Control-Allow-Origin": "*"})
+
+
+def get_categories(request: HttpRequest) -> HttpResponse:
+    content = [cat.to_json() for cat in Category.objects.all()]
+    return JsonResponse(content, safe=False, headers={"Access-Control-Allow-Origin": "*"})
