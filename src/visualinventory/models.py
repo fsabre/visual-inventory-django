@@ -50,7 +50,7 @@ class Location(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    locations = models.ManyToManyField(Location, related_name="stored_categories")
+    locations = models.ManyToManyField(Location, related_name="stored_categories", blank=True)
 
     class Meta:
         verbose_name_plural = "Categories"

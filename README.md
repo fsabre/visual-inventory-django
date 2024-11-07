@@ -53,7 +53,6 @@ npm run dev
 ### Fix
 
 - The parent of a Location can't be self or children.
-- It should be possible to create a Category with no location.
 - Optimize queries
 
 ### Deployment
