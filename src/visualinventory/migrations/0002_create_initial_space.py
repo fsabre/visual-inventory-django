@@ -4,14 +4,14 @@ from django.db import migrations
 
 
 def create_initial_space(apps, schema_editor) -> None:
-    Location = apps.get_model("locations", "Location")
+    Location = apps.get_model("visualinventory", "Location")
     initial_space = Location(pk=1, name="Initial space", parent=None)
     initial_space.save()
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('locations', '0001_initial'),
+        ('visualinventory', '0001_initial'),
     ]
 
     operations = [

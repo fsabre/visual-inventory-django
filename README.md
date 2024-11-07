@@ -52,8 +52,8 @@ npm run dev
 
 ### Fix
 
-- Rename the app to "visualinventory" and the project to "?"
 - The parent of a Location can't be self or children.
+- It should be possible to create a Category with no location.
 - Optimize queries
 
 ### Deployment

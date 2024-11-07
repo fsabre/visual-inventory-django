@@ -34,9 +34,9 @@ class Location(models.Model):
     def get_recursive_children(self) -> Iterable["Location"]:
         query = Location.objects.raw(
             raw_query="""WITH RECURSIVE children AS (
-                SELECT id, name, parent_id from locations_location WHERE id == %(self_id)s
+                SELECT id, name, parent_id from visualinventory_location WHERE id == %(self_id)s
                 UNION ALL
-                SELECT l.id, l.name, l.parent_id from locations_location l, children WHERE l.parent_id == children.id
+                SELECT l.id, l.name, l.parent_id from visualinventory_location l, children WHERE l.parent_id == children.id
             )
             SELECT * from children""",
             params={"self_id": self.id},

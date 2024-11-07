@@ -18,7 +18,7 @@ def viewer(request: HttpRequest, location_id: int) -> HttpResponse:
         "sub_locations": sub_locations,
         "category_names": category_names,
     }
-    return render(request, "locations/viewer.jinja2", context=context)
+    return render(request, "visualinventory/viewer.jinja2", context=context)
 
 
 def get_location(request: HttpRequest, location_id: int) -> HttpResponse:
