@@ -4,7 +4,11 @@ from .models import Location, Category
 
 
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ["name", "parent"]
+    list_display = ["id", "name", "parent"]
+    fieldsets = [
+        (None, {"fields": ["name", "parent"]}),
+        ("Layout", {"fields": ["x", "y", "dx", "dy"]}),
+    ]
 
 
 class CategoryAdmin(admin.ModelAdmin):

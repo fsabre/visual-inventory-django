@@ -12,6 +12,16 @@ class Location(models.Model):
         on_delete=models.CASCADE,
         related_name="children",
     )
+    x = models.IntegerField(default=0)
+    y = models.IntegerField(default=0)
+    dx = models.IntegerField(default=32)
+    dy = models.IntegerField(default=32)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=models.Q(dx__gt=0), name="positive_dx"),
+            models.CheckConstraint(condition=models.Q(dy__gt=0), name="positive_dy"),
+        ]
 
     def __str__(self) -> str:
         return self.name

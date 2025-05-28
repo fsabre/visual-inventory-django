@@ -16,7 +16,7 @@ class LocationWithoutChildrenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Location
-        fields = ["id", "name", "parent", "children", "categories"]
+        fields = ["id", "name", "parent", "children", "categories", "x", "y", "dx", "dy"]
 
     children = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
