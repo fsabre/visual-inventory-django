@@ -1,4 +1,4 @@
-from typing import Dict, Iterable
+from typing import Iterable
 
 from django.db import models
 
@@ -15,21 +15,6 @@ class Location(models.Model):
 
     def __str__(self) -> str:
         return self.name
-
-    def to_json(self, depth: int = 0, include_categories: bool = False) -> Dict:
-        content = {
-            "id": self.id,
-            "name": self.name,
-            "parent": self.parent.id if self.parent else None,
-            "children": [],
-        }
-        if include_categories:
-            content["categories"] = [cat.to_json() for cat in self.get_recursive_categories()]
-        if depth > 0:
-            for child in self.children.all():
-                child_data = child.to_json(depth=depth - 1, include_categories=include_categories)
-                content["children"].append(child_data)
-        return content
 
     def get_recursive_children(self) -> Iterable["Location"]:
         query = Location.objects.raw(
@@ -50,17 +35,10 @@ class Location(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    locations = models.ManyToManyField(Location, related_name="stored_categories", blank=True)
+    locations = models.ManyToManyField(Location, blank=True, related_name="stored_categories")
 
     class Meta:
         verbose_name_plural = "Categories"
 
     def __str__(self) -> str:
         return self.name
-
-    def to_json(self) -> Dict:
-        content = {
-            "id": self.id,
-            "name": self.name,
-        }
-        return content

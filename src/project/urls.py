@@ -16,11 +16,9 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.shortcuts import redirect
 from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/", include("visualinventory.urls")),
-    path("", lambda req: redirect("/location/1")),
+    path('api/', include("visualinventory.urls")),
 ]
