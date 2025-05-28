@@ -34,6 +34,8 @@ Run the backend with :
 ```bash
 source venv\bin\activate
 cd src/
+python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver localhost:8000
 ```
 
@@ -44,7 +46,16 @@ cd frontend/
 npm run dev
 ```
 
+The app will be available on "localhost:5173" and the admin on "localhost:8000/admin"
+
 ## TODO
+
+- Fix le HR
+- Revoir chaque ligne
+- Dégager le absolute et lettre une flexbox à la place pareil pour ça margin: -4rem 15rem 0;
+- 
+- 
+
 
 ### Features
 
