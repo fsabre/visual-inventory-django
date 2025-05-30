@@ -7,7 +7,7 @@ You can fill your global physical storage with several sublocations, that will c
 
 ## Run Locally
 
-Clone the project.
+Start by cloning the project.
 
 ```bash
 git clone https://github.com/fsabre/visual-inventory-django.git
@@ -17,32 +17,39 @@ cd visual-inventory-django/
 Install the backend.
 
 ```bash
-python -m venv venv
-source venv\bin\activate
+python -m venv venv  # Maybe python3 depending on your system
+source venv/bin/activate
 pip install -r requirements.txt
+cd src/
+python manage.py migrate
+python manage.py createsuperuser
 ```
 
 Install the frontend.
 
 ```bash
-cd frontend
+cd frontend/
 npm install
 ```
 
-Run the backend with :
+Then, when you want to run the backend :
 
 ```bash
-source venv\bin\activate
+source venv/bin/activate
 cd src/
 python manage.py runserver localhost:8000
 ```
 
-Run the backend with :
+The admin dashboard will be available at http://localhost:8000/admin.
+
+And to run the frontend :
 
 ```bash
 cd frontend/
 npm run dev
 ```
+
+The user app will be available at http://localhost:5173/.
 
 ## TODO
 
