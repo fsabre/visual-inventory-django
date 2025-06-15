@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "preact/hooks";
+import {useEffect, useMemo, useRef, useState} from "preact/hooks";
 
 import {getCategories, getLocation} from "./api.ts";
 import {Category, Location} from "./models.ts";
@@ -28,8 +28,20 @@ export function App() {
         })();
     }, [locationId]);
 
-    const tileContainerWidth = useMemo(() => Math.max(...location.children.map(child => child.x + child.dx), 0), [location]);
-    const tileContainerHeight = useMemo(() => Math.max(...location.children.map(child => child.y + child.dy), 0), [location]);
+    const tileContainerParentRef = useRef<HTMLDivElement>(null);
+    // Compute the total size of the tile container from its tiles
+    const tileContainerWidth = useMemo(() => Math.max(0, ...location.children.map(child => child.x + child.dx)), [location]);
+    const tileContainerHeight = useMemo(() => Math.max(0, ...location.children.map(child => child.y + child.dy)), [location]);
+    // Compute the scale of the tile container, to fill the parent while keeping proportions
+    const tileContainerScale = useMemo(() => {
+        if (tileContainerParentRef.current === null || tileContainerWidth === 0 || tileContainerHeight === 0) {
+            return 1;
+        }
+        return Math.min(
+            tileContainerParentRef.current.clientWidth / tileContainerWidth,
+            tileContainerParentRef.current.clientHeight / tileContainerHeight,
+        );
+    }, [tileContainerWidth, tileContainerHeight]);
 
     return (
         <div>
@@ -41,25 +53,31 @@ export function App() {
             <CategorySelector value={searchedCategoryId} onChange={setSearchedCategoryId}/>
 
             <h2>Sub-locations :</h2>
-            <div
-                className="tile-container"
-                style={{width: `${tileContainerWidth}px`, height: `${tileContainerHeight}px`}}
-            >
-                {location.children.map((child, idx) => (
-                    <div
-                        key={idx}
-                        onClick={() => setLocationId(child.id)}
-                        className={child.categories.some(cat => cat.id === searchedCategoryId) ? "tile highlighted" : "tile"}
-                        style={{
-                            width: `${child.dx}px`,
-                            height: `${child.dy}px`,
-                            left: `${child.x}px`,
-                            top: `${child.y}px`,
-                        }}
-                    >
-                        {child.name}
-                    </div>
-                ))}
+            <div ref={tileContainerParentRef} className="tile-container-parent">
+                <div
+                    className="tile-container"
+                    style={{
+                        width: `${tileContainerWidth}px`,
+                        height: `${tileContainerHeight}px`,
+                        transform: `scale(${tileContainerScale})`,
+                    }}
+                >
+                    {location.children.map((child, idx) => (
+                        <div
+                            key={idx}
+                            onClick={() => setLocationId(child.id)}
+                            className={child.categories.some(cat => cat.id === searchedCategoryId) ? "tile highlighted" : "tile"}
+                            style={{
+                                width: `${child.dx}px`,
+                                height: `${child.dy}px`,
+                                left: `${child.x}px`,
+                                top: `${child.y}px`,
+                            }}
+                        >
+                            {child.name}
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <h2>Contains :</h2>

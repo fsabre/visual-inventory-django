@@ -1,9 +1,9 @@
+.tile-container-parent {
+    height: 400px;
+}
+
 .tile-container {
-    position: relative;
-    box-sizing: border-box;
-    padding: 10px;
-    border: solid black 1px;
-    border-radius: 10px;
+    transform-origin: top left;
 }
 
 .parent {
@@ -18,7 +18,9 @@
     box-sizing: border-box;
     padding: 10px;
     border: solid grey 1px;
+    border-radius: 10px;
     color: red;
+    text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
 }
