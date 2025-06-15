@@ -4,6 +4,10 @@ export interface Location {
     parent: number | null;
     children: Location[];
     categories: Category[];
+    x: number;
+    y: number;
+    dx: number;
+    dy: number;
 }
 
 export interface Category {

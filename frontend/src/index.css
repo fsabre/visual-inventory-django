@@ -1,11 +1,28 @@
+.tile-container-parent {
+    height: 400px;
+}
+
 .tile-container {
-    display: flex;
-    gap: 10px;
+    transform-origin: top left;
+}
+
+.parent {
+    padding: 10px;
+    border: solid grey 1px;
+    border-radius: 10px;
+    color: red;
 }
 
 .tile {
+    position: absolute;
+    box-sizing: border-box;
     padding: 10px;
     border: solid grey 1px;
+    border-radius: 10px;
+    color: red;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .tile.highlighted {
