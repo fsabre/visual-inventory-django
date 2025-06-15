@@ -1,13 +1,25 @@
-import { useEffect, useState , useMemo} from "preact/hooks";
-import { Category, Location } from "./models.ts";
-import { getCategories, getLocation } from "./api.ts";
+import {useEffect, useMemo, useState} from "preact/hooks";
 
-const BLANK_LOCATION: Location = { id: 0, name: "", parent: null, children: [], categories: [], x:0, y:0, dx:0, dy:0 };
+import {getCategories, getLocation} from "./api.ts";
+import {Category, Location} from "./models.ts";
+
+// Default location used before loading initial location (with id 1)
+const BLANK_LOCATION: Location = {
+    id: 0,
+    name: "",
+    parent: null,
+    children: [],
+    categories: [],
+    x: 0,
+    y: 0,
+    dx: 0,
+    dy: 0
+};
 
 export function App() {
     const [locationId, setLocationId] = useState(1);
     const [location, setLocation] = useState<Location>(BLANK_LOCATION);
-    const [searchedCategoryId, setSearchedCategoryId] = useState(0);
+    const [searchedCategoryId, setSearchedCategoryId] = useState(0);  // 0 means no category searched
 
     useEffect(() => {
         console.log("locationId has changed to", locationId);
@@ -16,10 +28,8 @@ export function App() {
         })();
     }, [locationId]);
 
-    // Overflow ellipsis sur les tuiles
-    
-    const containerWidth = useMemo(() => Math.max(...location.children.map(child => (child.x) + (child.dx)), 0), [location]) ; 
-    const containerHeight = useMemo(() => Math.max(...location.children.map(child => (child.y) + (child.dy)), 0), [location]) ; 
+    const tileContainerWidth = useMemo(() => Math.max(...location.children.map(child => child.x + child.dx), 0), [location]);
+    const tileContainerHeight = useMemo(() => Math.max(...location.children.map(child => child.y + child.dy), 0), [location]);
 
     return (
         <div>
@@ -28,11 +38,13 @@ export function App() {
                 Parent
             </div>
 
-            <CategorySelector value={searchedCategoryId} onChange={setSearchedCategoryId} />
+            <CategorySelector value={searchedCategoryId} onChange={setSearchedCategoryId}/>
 
             <h2>Sub-locations :</h2>
-            <div  className="tile-container"
-                style={{ width: `${containerWidth}px`, height: `${containerHeight}px`   }}>
+            <div
+                className="tile-container"
+                style={{width: `${tileContainerWidth}px`, height: `${tileContainerHeight}px`}}
+            >
                 {location.children.map((child, idx) => (
                     <div
                         key={idx}
@@ -65,7 +77,7 @@ interface CategorySelectorProps {
     onChange: (id: number) => void;
 }
 
-function CategorySelector({ value, onChange }: CategorySelectorProps) {
+function CategorySelector(props: CategorySelectorProps) {
     const [categories, setCategories] = useState<Category[]>([]);
 
     useEffect(() => {
@@ -75,7 +87,7 @@ function CategorySelector({ value, onChange }: CategorySelectorProps) {
     return (
         <div>
             <p>Select a category to look for :</p>
-            <select value={value} onChange={ev => onChange(Number(ev.currentTarget.value) || 0)}>
+            <select value={props.value} onChange={ev => props.onChange(Number(ev.currentTarget.value) || 0)}>
                 <option value={0}></option>
                 {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
