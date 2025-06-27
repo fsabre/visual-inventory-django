@@ -2,4 +2,11 @@ services:
   web:
     build: .
     ports:
+      - "5173:5173"
+  
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
       - "8000:8000"

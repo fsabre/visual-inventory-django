@@ -1,0 +1,19 @@
+#Install the backend and run migrations
+FROM python:3.13-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y \
+    python -m venv venv &&\
+    source venv/bin/activate &&\
+    pip install -r requirements.txt &&\
+    cd src/ &&\
+    python manage.py migrate &&\
+    python manage.py createsuperuser
+COPY /src /app/
+
+#run the backend server
+FROM python:3.13-slim
+WORKDIR /app
+COPY --from=build /app/dist /app
+COPY /src /app/
+EXPOSE 8000
+CMD ["python3", "-m", "http.server", "8000", "--bind", "0.0.0.0"]
