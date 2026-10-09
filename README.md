@@ -59,7 +59,6 @@ The user app will be available at http://localhost:5173/.
 
 ### Fix
 
-- The parent of a Location can't be self or children.
 - Optimize queries
 
 ### Deployment

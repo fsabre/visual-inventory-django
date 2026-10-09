@@ -1,6 +1,7 @@
 from typing import Iterable
 
 from django.db import models
+from django.core.exceptions import ValidationError
 
 
 class Location(models.Model):
@@ -25,6 +26,16 @@ class Location(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def clean(self) -> None:
+        super().clean()
+        if self == self.parent:
+            raise ValidationError("A location cannot be its own parent")
+        current_parent = self.parent
+        while current_parent is not None:
+            if current_parent == self:
+                raise ValidationError("A location cannot be in its own descendants")
+            current_parent = current_parent.parent
 
     def get_recursive_children(self) -> Iterable["Location"]:
         query = Location.objects.raw(
