@@ -29,6 +29,14 @@ class Location(models.Model):
 
     def clean(self) -> None:
         super().clean()
+
+        # Ensure the parent validation is ran only when the instance is
+        # created/the parent change.
+        if self.pk:
+            previous_parent_id = Location.objects.only("parent_id").get(pk=self.pk).parent_id
+            if previous_parent_id == self.parent_id:
+                return
+
         if self == self.parent:
             raise ValidationError("A location cannot be its own parent")
         current_parent = self.parent
