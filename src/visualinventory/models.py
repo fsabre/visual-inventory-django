@@ -13,10 +13,37 @@ class Location(models.Model):
         on_delete=models.CASCADE,
         related_name="children",
     )
-    x = models.IntegerField(default=0)
-    y = models.IntegerField(default=0)
+    x = models.IntegerField(blank=True)
+    y = models.IntegerField(blank=True)
     dx = models.IntegerField(default=32)
     dy = models.IntegerField(default=32)
+
+    def set_auto_position_x(self) -> int:
+        """Find an available x position to avoid collision with others locations"""
+        if self.parent_id is None:
+            return 0
+
+        # Find sibling locations
+        siblings = Location.objects.filter(parent_id=self.parent_id)
+        siblings = siblings.exclude(pk=self.pk)
+        boxes = list(siblings.values_list("x", "y", "dx", "dy"))
+
+        x = 0
+        y = self.y
+        # Search for an available x position
+        while True:
+            # Check whether the current position collide with any siblings
+            for bx, by, bdx, bdy in boxes:
+                collision = (x < bx + bdx and x + self.dx > bx
+                             and y < by + bdy and y + self.dy > by)
+                # If a collision is detected, move x to the sibling's right edge
+                if collision:
+                    x = bx + bdx
+                    break
+            # Return the first x position without any collision
+            else:
+                return x  
+
 
     class Meta:
         constraints = [
@@ -30,12 +57,22 @@ class Location(models.Model):
     def clean(self) -> None:
         super().clean()
 
+        if self.y is None:
+            self.y = 0
+        if self.x is None:
+            self.x = self.set_auto_position_x()
+
         # Ensure the parent validation is ran only when the instance is
         # created/the parent change.
         if self.pk:
             previous_parent_id = Location.objects.only("parent_id").get(pk=self.pk).parent_id
-            if previous_parent_id == self.parent_id:
-                return
+            if previous_parent_id != self.parent_id:
+                self.validate_parent()
+        else:
+            self.validate_parent()
+
+    def validate_parent(self) -> None:
+        """Raise an ValidationError if the change in parent breaks the tree."""
 
         if self == self.parent:
             raise ValidationError("A location cannot be its own parent")
