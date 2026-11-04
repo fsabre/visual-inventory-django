@@ -1,7 +1,8 @@
 from typing import Iterable
 
-from django.db import models
+from django.db import models, transaction
 from django.core.exceptions import ValidationError
+from django.db.models import F
 
 
 class Location(models.Model):
@@ -17,6 +18,17 @@ class Location(models.Model):
     y = models.IntegerField(blank=True)
     dx = models.IntegerField(default=32)
     dy = models.IntegerField(default=32)
+
+    high = models.PositiveIntegerField(blank=True)
+    low = models.PositiveIntegerField(blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=models.Q(dx__gt=0), name="positive_dx"),
+            models.CheckConstraint(condition=models.Q(dy__gt=0), name="positive_dy"),
+            models.CheckConstraint(condition=models.Q(high__gt=0), name="positive_high"),
+            models.CheckConstraint(condition=models.Q(low__gt=0), name="positive_low"),
+        ]
 
     def set_auto_position_x(self) -> int:
         """Find an available x position to avoid collision with others locations"""
@@ -34,22 +46,14 @@ class Location(models.Model):
         while True:
             # Check whether the current position collide with any siblings
             for bx, by, bdx, bdy in boxes:
-                collision = (x < bx + bdx and x + self.dx > bx
-                             and y < by + bdy and y + self.dy > by)
+                collision = x < bx + bdx and x + self.dx > bx and y < by + bdy and y + self.dy > by
                 # If a collision is detected, move x to the sibling's right edge
                 if collision:
                     x = bx + bdx
                     break
             # Return the first x position without any collision
             else:
-                return x  
-
-
-    class Meta:
-        constraints = [
-            models.CheckConstraint(condition=models.Q(dx__gt=0), name="positive_dx"),
-            models.CheckConstraint(condition=models.Q(dy__gt=0), name="positive_dy"),
-        ]
+                return x
 
     def __str__(self) -> str:
         return self.name
@@ -68,8 +72,44 @@ class Location(models.Model):
             previous_parent_id = Location.objects.only("parent_id").get(pk=self.pk).parent_id
             if previous_parent_id != self.parent_id:
                 self.validate_parent()
+                self.move(self.parent)
         else:
             self.validate_parent()
+            self.set_up_intervals()
+
+    def set_up_intervals(self) -> None:
+        """Set up a basic interval for newly added locations."""
+        low: int = self.parent.high
+        Location.objects.filter(low__gte=low).update(low=F("low") + 2)
+        Location.objects.filter(high__gte=low).update(high=F("high") + 2)
+        self.low = low
+        self.high = self.low + 1
+
+    def move(self, new_parent: "Location") -> None:
+        """Update the database with the new parent and intervals."""
+        with transaction.atomic():  # I AM ATOMIC
+            self.parent = new_parent
+            self.save(update_fields=["parent"])
+            destination_low: int = new_parent.high
+            subtree_size: int = self.high - self.low + 1
+            # Create the interval space at the destination
+            Location.objects.filter(low__gte=destination_low).update(low=F("low") + subtree_size)
+            Location.objects.filter(high__gte=destination_low).update(high=F("high") + subtree_size)
+            # If you move the location to a smaller index, reserving a space will shift the location
+            # interval.
+            self.refresh_from_db(fields=["low", "high"])
+            source_low: int = self.low
+            movement_diff: int = destination_low - source_low
+            # Move the whole subtree
+            (
+                Location.objects.filter(low__gte=self.low, high__lte=self.high).update(
+                    low=F("low") + movement_diff, high=F("high") + movement_diff
+                )
+            )
+            # Suppress the initial space at the source
+            Location.objects.filter(low__gte=source_low).update(low=F("low") - subtree_size)
+            Location.objects.filter(high__gte=source_low).update(high=F("high") - subtree_size)
+        self.refresh_from_db(fields=["low", "high"])
 
     def validate_parent(self) -> None:
         """Raise an ValidationError if the change in parent breaks the tree."""
