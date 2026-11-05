@@ -74,7 +74,6 @@ class Location(models.Model):
                 self.validate_parent()
                 self.move(self.parent)
         else:
-            self.validate_parent()
             self.set_up_intervals()
 
     def set_up_intervals(self) -> None:
@@ -114,13 +113,8 @@ class Location(models.Model):
     def validate_parent(self) -> None:
         """Raise an ValidationError if the change in parent breaks the tree."""
 
-        if self == self.parent:
-            raise ValidationError("A location cannot be its own parent")
-        current_parent = self.parent
-        while current_parent is not None:
-            if current_parent == self:
-                raise ValidationError("A location cannot be in its own descendants")
-            current_parent = current_parent.parent
+        if self.parent.low >= self.low and self.parent.high <= self.high:
+            raise ValidationError("A location cannot be in itself or its own descendants")
 
     def get_recursive_children(self) -> Iterable["Location"]:
         query = Location.objects.raw(
