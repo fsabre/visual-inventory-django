@@ -6,6 +6,16 @@ from django.db.models import F
 
 
 class Location(models.Model):
+    """
+    Represents a location within the inventory structure.
+    Locations are organized as a tree, where each location can have a parent and multiple children.
+    Each location also stores its position and dimensions, which are used for its graphical
+    representation.
+    The hierarchy is managed using the Nested Set Model, where 'low' and 'high'
+    define each location's interval. Locations are not deleted to avoid the overhead of updating
+    intervals. Gaps in interval values are tolerated and do not affect the hierarchy.
+    """
+
     name = models.CharField(max_length=100)
     parent = models.ForeignKey(
         to="self",
