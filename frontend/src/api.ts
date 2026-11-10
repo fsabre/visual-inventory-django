@@ -1,4 +1,4 @@
-import {Category, Location} from "./models.ts";
+import type {Category, Location} from "./models.ts";
 
 const URL = "http://localhost:8000/api";
 

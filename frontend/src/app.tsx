@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef, useState} from "preact/hooks";
 
 import {getCategories, getLocation} from "./api.ts";
-import {Category, Location} from "./models.ts";
+import type {Category, Location} from "./models.ts";
 
 // Default location used before loading initial location (with id 1)
 const BLANK_LOCATION: Location = {
