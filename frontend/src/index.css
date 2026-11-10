@@ -1,16 +1,12 @@
-.tile-container-parent {
-    height: 400px;
-}
-
-.tile-container {
-    transform-origin: top left;
-}
-
 .parent {
     padding: 10px;
     border: solid grey 1px;
     border-radius: 10px;
     color: red;
+}
+
+.tile-container {
+    position: relative;
 }
 
 .tile {

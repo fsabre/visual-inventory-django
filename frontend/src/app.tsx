@@ -28,20 +28,6 @@ export function App() {
         })();
     }, [locationId]);
 
-    const tileContainerParentRef = useRef<HTMLDivElement>(null);
-    // Compute the total size of the tile container from its tiles
-    const tileContainerWidth = useMemo(() => Math.max(0, ...location.children.map(child => child.x + child.dx)), [location]);
-    const tileContainerHeight = useMemo(() => Math.max(0, ...location.children.map(child => child.y + child.dy)), [location]);
-    // Compute the scale of the tile container, to fill the parent while keeping proportions
-    const tileContainerScale = useMemo(() => {
-        if (tileContainerParentRef.current === null || tileContainerWidth === 0 || tileContainerHeight === 0) {
-            return 1;
-        }
-        return Math.min(
-            tileContainerParentRef.current.clientWidth / tileContainerWidth,
-            tileContainerParentRef.current.clientHeight / tileContainerHeight,
-        );
-    }, [tileContainerWidth, tileContainerHeight]);
 
     return (
         <div>
@@ -53,32 +39,11 @@ export function App() {
             <CategorySelector value={searchedCategoryId} onChange={setSearchedCategoryId}/>
 
             <h2>Sub-locations :</h2>
-            <div ref={tileContainerParentRef} className="tile-container-parent">
-                <div
-                    className="tile-container"
-                    style={{
-                        width: `${tileContainerWidth}px`,
-                        height: `${tileContainerHeight}px`,
-                        transform: `scale(${tileContainerScale})`,
-                    }}
-                >
-                    {location.children.map((child, idx) => (
-                        <div
-                            key={idx}
-                            onClick={() => setLocationId(child.id)}
-                            className={child.categories.some(cat => cat.id === searchedCategoryId) ? "tile highlighted" : "tile"}
-                            style={{
-                                width: `${child.dx}px`,
-                                height: `${child.dy}px`,
-                                left: `${child.x}px`,
-                                top: `${child.y}px`,
-                            }}
-                        >
-                            {child.name}
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <TileViewer
+                locations={location.children}
+                searchedCategoryId={searchedCategoryId}
+                onClick={setLocationId}
+            />
 
             <h2>Contains :</h2>
             <ul>
@@ -111,6 +76,85 @@ function CategorySelector(props: CategorySelectorProps) {
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
             </select>
+        </div>
+    );
+}
+
+interface ITileViewer {
+    locations: Location[];
+    searchedCategoryId: number;
+    onClick: (locationId: number) => void;
+}
+
+function TileViewer(props: ITileViewer) {
+    // The component will never use more that this in height.
+    const MAX_HEIGHT = 800;
+
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const [wrapperSize, setWrapperSize] = useState({width: 0, height: 0});
+
+    // Compute the total size of the tile container from its tiles
+    const totalWidth = useMemo(
+        () => Math.max(0, ...props.locations.map(child => child.x + child.dx)),
+        [props.locations],
+    );
+    const totalHeight = useMemo(
+        () => Math.max(0, ...props.locations.map(child => child.y + child.dy)),
+        [props.locations],
+    );
+    // Compute the scale, to fill the wrapper while keeping proportions
+    const scale = useMemo(() => {
+        if (totalWidth === 0 || totalHeight === 0) {
+            return 1;
+        }
+        // Max width is 100% of parent, max height is fixed, no minimums
+        const scaleByWidth = wrapperSize.width / totalWidth;
+        const scaleByHeight = MAX_HEIGHT / totalHeight;
+        return Math.min(scaleByWidth, scaleByHeight);
+    }, [totalWidth, totalHeight, wrapperSize]);
+
+    useEffect(() => {
+        const updateWrapperSize = () => {
+            if (wrapperRef.current) {
+                const clientRect = wrapperRef.current.getBoundingClientRect();
+                setWrapperSize({width: clientRect.width, height: clientRect.height});
+            }
+        };
+        updateWrapperSize();
+        window.addEventListener("resize", updateWrapperSize);
+        return () => window.removeEventListener("resize", updateWrapperSize);
+    }, []);
+
+    return (
+        // The wrapper is used to compute available space to display the tiles.
+        <div
+            class="tile-container-wrapper"
+            ref={wrapperRef}
+        >
+            {/*The container is used to fill the space, because the tiles inside are floating.*/}
+            <div
+                className="tile-container"
+                style={{
+                    width: (totalWidth * scale).toFixed() + "px",
+                    height: (totalHeight * scale).toFixed() + "px",
+                }}
+            >
+                {props.locations.map((child, idx) => (
+                    <div
+                        key={idx}
+                        onClick={() => props.onClick(child.id)}
+                        className={child.categories.some(cat => cat.id === props.searchedCategoryId) ? "tile highlighted" : "tile"}
+                        style={{
+                            width: (child.dx * scale).toFixed() + "px",
+                            height: (child.dy * scale).toFixed() + "px",
+                            left: (child.x * scale).toFixed() + "px",
+                            top: (child.y * scale).toFixed() + "px",
+                        }}
+                    >
+                        {child.name}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
