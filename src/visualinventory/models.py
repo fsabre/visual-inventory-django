@@ -127,19 +127,16 @@ class Location(models.Model):
             raise ValidationError("A location cannot be in itself or its own descendants")
 
     def get_recursive_children(self) -> Iterable["Location"]:
-        query = Location.objects.raw(
-            raw_query="""WITH RECURSIVE children AS (
-                SELECT id, name, parent_id from visualinventory_location WHERE id == %(self_id)s
-                UNION ALL
-                SELECT l.id, l.name, l.parent_id from visualinventory_location l, children WHERE l.parent_id == children.id
-            )
-            SELECT * from children""",
-            params={"self_id": self.id},
+        query = Location.objects.filter(
+            low__gt=self.low,
+            high__lt=self.high,
         )
         return query
 
     def get_recursive_categories(self) -> Iterable["Category"]:
-        query = Category.objects.filter(locations__in=self.get_recursive_children()).distinct()
+        query = Category.objects.filter(
+            locations__in=self.get_recursive_children()
+        ).distinct()
         return query
 
 
