@@ -32,8 +32,35 @@ class LocationWithoutChildrenSerializer(serializers.ModelSerializer):
 class LocationSerializer(LocationWithoutChildrenSerializer):
     """The base serializer for Locations."""
 
+    # Defines the additional fields exposed by the serializer
+    class Meta(LocationWithoutChildrenSerializer.Meta):
+        fields = LocationWithoutChildrenSerializer.Meta.fields + ["search_result"]
+
     # This is supposed to be a ListField, but it just doesn't work.
     children = serializers.ListSerializer(child=LocationWithoutChildrenSerializer())
+    search_result = serializers.SerializerMethodField()
+
+    # Removes search_result from the serialized fields when no search parameter is provided
+    def get_fields(self):
+        fields = super().get_fields()
+
+        request = self.context.get("request")
+        if request is None or "search" not in request.query_params:
+            fields.pop("search_result", None)
+
+        return fields
+
+    # Returns the IDs of all recursive children matching the requested category
+    def get_search_result(self, obj: Location):
+        request = self.context.get("request")
+        category_id = request.query_params.get("search") # None, blank or str
+        try:
+            category_id = int(category_id)
+        except ValueError:
+            return []
+
+        locations = obj.get_recursive_children().filter(stored_categories__id=category_id)
+        return list(locations.values_list("id", flat=True).distinct())
 
 
 class CategorySerializer(serializers.ModelSerializer):
