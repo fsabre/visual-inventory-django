@@ -32,7 +32,7 @@ class LocationWithoutChildrenSerializer(serializers.ModelSerializer):
 class LocationSerializer(LocationWithoutChildrenSerializer):
     """The base serializer for Locations."""
 
-    # Defines the additional fields exposed by the serializer
+    # Define the additional fields exposed by the serializer.
     class Meta(LocationWithoutChildrenSerializer.Meta):
         fields = LocationWithoutChildrenSerializer.Meta.fields + ["search_result"]
 
@@ -40,8 +40,9 @@ class LocationSerializer(LocationWithoutChildrenSerializer):
     children = serializers.ListSerializer(child=LocationWithoutChildrenSerializer())
     search_result = serializers.SerializerMethodField()
 
-    # Removes search_result from the serialized fields when no search parameter is provided
     def get_fields(self):
+        """Remove search_result from the serialized fields when no search parameter is provided."""
+
         fields = super().get_fields()
 
         request = self.context.get("request")
@@ -50,8 +51,9 @@ class LocationSerializer(LocationWithoutChildrenSerializer):
 
         return fields
 
-    # Returns the IDs of all recursive children matching the requested category
     def get_search_result(self, obj: Location):
+        """Return the IDs of all recursive children matching the requested category."""
+
         request = self.context.get("request")
         category_id = request.query_params.get("search") # None, blank or str
         try:
