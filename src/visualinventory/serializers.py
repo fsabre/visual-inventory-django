@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import Category, Location
 
+from django.db import transaction
 
 class TinyLocationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,6 +65,23 @@ class LocationSerializer(LocationWithoutChildrenSerializer):
         locations = obj.get_recursive_children().filter(stored_categories__id=category_id)
         return list(locations.values_list("id", flat=True).distinct())
 
+class LocationCreateSerializer(serializers.ModelSerializer):
+    """A serializer to create new Locations"""
+
+    class Meta:
+        model = Location
+        fields = ["name", "parent", "x", "y", "dx", "dy"]
+        extra_kwargs = {
+            "dx": {"min_value":1},
+            "dy": {"min_value":1},
+        }
+
+    @transaction.atomic
+    def create(self, validated_data):
+        location = Location(**validated_data)
+        location.full_clean()
+        location.save()
+        return location
 
 class CategorySerializer(serializers.ModelSerializer):
     """The base serializer for Categories."""
