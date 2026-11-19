@@ -13,7 +13,8 @@ const BLANK_LOCATION: Location = {
     x: 0,
     y: 0,
     dx: 0,
-    dy: 0
+    dy: 0,
+    searchResults: [],
 };
 
 export function App() {
@@ -22,12 +23,10 @@ export function App() {
     const [searchedCategoryId, setSearchedCategoryId] = useState(0);  // 0 means no category searched
 
     useEffect(() => {
-        console.log("locationId has changed to", locationId);
         (async function () {
-            setLocation(await getLocation(locationId));
+            setLocation(await getLocation(locationId, searchedCategoryId));
         })();
-    }, [locationId]);
-
+    }, [locationId, searchedCategoryId]);
 
     return (
         <div>
@@ -40,8 +39,8 @@ export function App() {
 
             <h2>Sub-locations :</h2>
             <TileViewer
-                locations={location.children}
-                searchedCategoryId={searchedCategoryId}
+                locations={location.children ?? []}
+                toHighlight={location.searchResults}
                 onClick={setLocationId}
             />
 
@@ -82,7 +81,7 @@ function CategorySelector(props: CategorySelectorProps) {
 
 interface ITileViewer {
     locations: Location[];
-    searchedCategoryId: number;
+    toHighlight: number[];
     onClick: (locationId: number) => void;
 }
 
@@ -143,7 +142,7 @@ function TileViewer(props: ITileViewer) {
                     <div
                         key={idx}
                         onClick={() => props.onClick(child.id)}
-                        className={child.categories.some(cat => cat.id === props.searchedCategoryId) ? "tile highlighted" : "tile"}
+                        className={props.toHighlight.includes(child.id) ? "tile highlighted" : "tile"}
                         style={{
                             width: (child.dx * scale).toFixed() + "px",
                             height: (child.dy * scale).toFixed() + "px",
