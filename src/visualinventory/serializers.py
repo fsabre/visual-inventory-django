@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import OuterRef, Exists
 from rest_framework import serializers
 
 from .models import Category, Location
@@ -17,22 +18,33 @@ class LocationWithoutChildrenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Location
-        fields = ["id", "name", "parent", "children", "categories", "descendant_categories", "x", "y", "dx", "dy"]
+        fields = [
+            "id",
+            "name",
+            "parent",
+            "children",
+            "categories",
+            "descendant_categories",
+            "x",
+            "y",
+            "dx",
+            "dy",
+        ]
 
     children = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     descendant_categories = serializers.SerializerMethodField()
 
     def get_children(self, obj: Location) -> None:
-        """"Return None, because this field won't be filled in this lesser serializer."""
+        """ "Return None, because this field won't be filled in this lesser serializer."""
         return None
 
     def get_categories(self, obj: Location) -> None:
-        """"Return None, because this field won't be filled in this lesser serializer."""
+        """ "Return None, because this field won't be filled in this lesser serializer."""
         return None
 
     def get_descendant_categories(self, obj: Location) -> None:
-        """"Return None, because this field won't be filled in this lesser serializer."""
+        """ "Return None, because this field won't be filled in this lesser serializer."""
         return None
 
 
@@ -73,8 +85,26 @@ class LocationSerializer(LocationWithoutChildrenSerializer):
             category_id = int(category_id)
         except ValueError:
             return []
-        locations = obj.get_descendants().filter(stored_categories__id=category_id)
-        return list(locations.values_list("id", flat=True).distinct())
+
+        # Subquery to find locations matching the requested category
+        matching_locations = Location.objects.filter(
+            stored_categories__id=category_id,
+            low__gte=OuterRef("low"),
+            high__lte=OuterRef("high"),
+        )
+
+        # Retrieve descendants of the current location that contain
+        # at least one matching location from the subquery
+        locations = (
+            Location.objects.filter(
+                low__gte=obj.low,
+                high__lte=obj.high,
+            ).annotate(
+                contains_matching_location=Exists(matching_locations)
+            ).filter(contains_matching_location=True)
+        )
+
+        return locations.values_list("id", flat=True)
 
 
 class LocationCreateSerializer(serializers.ModelSerializer):
