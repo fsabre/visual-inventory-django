@@ -1,8 +1,7 @@
-from typing import Iterable
-
-from django.db import models, transaction
 from django.core.exceptions import ValidationError
+from django.db import models, transaction
 from django.db.models import F
+from django.db.models.query import QuerySet
 
 
 class Location(models.Model):
@@ -126,18 +125,18 @@ class Location(models.Model):
         if self.parent.low >= self.low and self.parent.high <= self.high:
             raise ValidationError("A location cannot be in itself or its own descendants")
 
-    def get_recursive_children(self) -> Iterable["Location"]:
-        query = Location.objects.filter(
+    def get_descendants(self) -> QuerySet["Location"]:
+        """Return all descendant locations (recursive children)."""
+        return Location.objects.filter(
             low__gt=self.low,
             high__lt=self.high,
         )
-        return query
 
-    def get_recursive_categories(self) -> Iterable["Category"]:
-        query = Category.objects.filter(
-            locations__in=self.get_recursive_children()
+    def get_descendant_categories(self) -> QuerySet["Category"]:
+        """Return all categories from descendant locations."""
+        return Category.objects.filter(
+            locations__in=self.get_descendants()
         ).distinct()
-        return query
 
 
 class Category(models.Model):
